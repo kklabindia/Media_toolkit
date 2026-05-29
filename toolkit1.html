@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All-in-One Media & PDF Toolkit</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+
+    <style>
+        /* By default, force light colors even if the OS wants dark mode */
+        :root {
+            --background: #f3f4f6;
+            --text: #1f2937;
+        }
+        
+        /* Only apply dark mode colors if our HTML tag explicitly has the 'dark' class */
+        html.dark {
+            color-scheme: dark;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100 font-sans min-h-screen py-10 px-4 transition-colors duration-200">
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js";
+
+        // Light mode is always default. Only load dark if the user explicitly saved it before.
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <div class="max-w-4xl mx-auto">
+        <header class="flex flex-col sm:flex-row justify-between items-center mb-10 gap-4 border-b border-gray-200 dark:border-gray-800 pb-6">
+            <div class="text-center sm:text-left">
+                <h1 class="text-4xl font-bold text-gray-800 dark:text-white mb-2">📄 Media & PDF Toolpack</h1>
+                <p class="text-gray-600 dark:text-gray-400">Secure, offline-ready, and processed 100% locally on your machine.</p>
+            </div>
+            <button onclick="toggleTheme()" class="px-4 py-2 text-sm font-semibold rounded-xl bg-white dark:bg-gray-800 shadow-xs border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition cursor-pointer text-gray-800 dark:text-white">
+                🌓 Toggle Theme
+            </button>
+        </header>
+
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 bg-white dark:bg-gray-800 p-3 rounded-xl shadow-md border border-gray-200/50 dark:border-gray-700/50">
+            <div class="flex flex-wrap gap-2 justify-center">
+                <button onclick="switchTab('merge')" id="tab-merge" class="tab-btn px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 bg-blue-600 text-white shadow-xs">
+                    🔗 Merge PDFs
+                </button>
+                <button onclick="switchTab('slice')" id="tab-slice" class="tab-btn px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    ✂️ Slice PDF
+                </button>
+                <button onclick="switchTab('reduce')" id="tab-reduce" class="tab-btn px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    % Reduce PDF
+                </button>
+                <button onclick="switchTab('image-opt')" id="tab-image-opt" class="tab-btn px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    🖼️ Image Optimizer
+                </button>
+            </div>
+            
+            <button onclick="clearAllSessions()" class="px-5 py-2 rounded-lg font-medium text-sm bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/60 transition-colors duration-200 cursor-pointer">
+                🧹 Clear Workspace
+            </button>
+        </div>
+
+        <div id="status" class="hidden mb-6 p-4 rounded-lg text-center font-medium"></div>
+
+        <div id="tool-merge" class="tool-section bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-md border border-gray-200/60 dark:border-gray-700/60">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Merge Multiple PDFs</h2>
+            <div class="mb-6">
+                <input type="file" id="merge-files" multiple accept="application/pdf" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 dark:file:bg-gray-700 file:text-blue-700 dark:file:text-blue-400 hover:file:bg-blue-100 dark:hover:file:bg-gray-600 cursor-pointer" />
+            </div>
+            <button onclick="mergePDFs()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition shadow-md cursor-pointer">
+                Merge and Download
+            </button>
+        </div>
+
+        <div id="tool-slice" class="tool-section hidden bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-md border border-gray-200/60 dark:border-gray-700/60">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Slice/Extract PDF Pages</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Select PDF File:</label>
+                    <input type="file" id="slice-file" accept="application/pdf" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:bg-blue-50 dark:file:bg-gray-700 file:text-blue-700 dark:file:text-blue-400 cursor-pointer" />
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Pages to Extract:</label>
+                    <input type="text" id="slice-range" placeholder="e.g., 1, 3, 5-8" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-800 dark:text-white" />
+                </div>
+            </div>
+            <button onclick="slicePDF()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition shadow-md cursor-pointer">
+                Slice and Download
+            </button>
+        </div>
+
+        <div id="tool-reduce" class="tool-section hidden bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-md border border-gray-200/60 dark:border-gray-700/60">
+            <h2 class="text-2xl font-bold mb-2 text-gray-800 dark:text-white">Reduce PDF Size</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Drag the slider to manually control compression aggressiveness. Lower quality yields smaller files.</p>
+            
+            <div class="mb-6">
+                <label class="block text-sm font-semibold mb-2">Select PDF File:</label>
+                <input type="file" id="reduce-file" onchange="handleFileSelect()" accept="application/pdf" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 dark:file:bg-gray-700 file:text-blue-700 dark:file:text-blue-400 hover:file:bg-blue-100 dark:hover:file:bg-gray-600 cursor-pointer" />
+            </div>
+
+            <div id="compression-controls" class="hidden bg-gray-50 dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-700 mb-6">
+                <div class="flex justify-between items-center mb-2">
+                    <label class="text-sm font-semibold">Target Document Quality:</label>
+                    <span id="slider-value" class="text-sm font-bold text-blue-800 dark:text-blue-400 bg-blue-100 dark:bg-blue-950/50 px-2.5 py-1 rounded-md">70% (Balanced)</span>
+                </div>
+                <input type="range" id="quality-slider" min="10" max="100" value="70" oninput="updateEstimates()" class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600 mb-4">
+                
+                <div class="grid grid-cols-2 gap-4 text-center bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-100 dark:border-gray-700 shadow-xs">
+                    <div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">Original Size</p>
+                        <p id="size-original" class="text-lg font-bold text-gray-700 dark:text-gray-200">-</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">Estimated Size Range</p>
+                        <p id="size-estimated" class="text-lg font-bold text-green-600 dark:text-green-400">-</p>
+                    </div>
+                </div>
+            </div>
+            <button onclick="reducePDF()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition shadow-md cursor-pointer">
+                Optimize and Download
+            </button>
+        </div>
+
+        <div id="tool-image-opt" class="tool-section hidden bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-md border border-gray-200/60 dark:border-gray-700/60">
+            <h2 class="text-2xl font-bold mb-2 text-gray-800 dark:text-white">Image Optimizer & Resizer</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Compress photos and control pixel metrics dynamically with live output calculations.</p>
+            
+            <div class="mb-6">
+                <label class="block text-sm font-semibold mb-2">Select Image (PNG, JPG, WEBP):</label>
+                <input type="file" id="image-file" onchange="handleImageSelect()" accept="image/*" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 dark:file:bg-gray-700 file:text-blue-700 dark:file:text-blue-400 hover:file:bg-blue-100 dark:hover:file:bg-gray-600 cursor-pointer" />
+            </div>
+
+            <div id="image-controls" class="hidden bg-gray-50 dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-700 mb-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Dimension Control:</label>
+                    <select id="image-size-mode" onchange="toggleSizeInputs(); generateLiveImageEstimate();" class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 dark:text-white">
+                        <option value="original">Keep Original Source Dimensions</option>
+                        <option value="custom">Resize Sizing (Scale Bounds Constrained)</option>
+                    </select>
+                </div>
+
+                <div id="image-dimensions-inputs" class="hidden grid grid-cols-2 gap-4 bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-100 dark:border-gray-700">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Max Width (px)</label>
+                        <input type="number" id="img-max-width" oninput="generateLiveImageEstimate()" placeholder="Original Width" class="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Max Height (px)</label>
+                        <input type="number" id="img-max-height" oninput="generateLiveImageEstimate()" placeholder="Original Height" class="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="text-sm font-semibold">Output Encoding Quality:</label>
+                        <span id="img-slider-label" class="text-sm font-bold text-blue-800 dark:text-blue-400 bg-blue-100 dark:bg-blue-950/50 px-2.5 py-1 rounded-md">80%</span>
+                    </div>
+                    <input type="range" id="image-quality" min="10" max="100" value="80" oninput="document.getElementById('img-slider-label').textContent = this.value + '%'; generateLiveImageEstimate();" class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 text-center bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-100 dark:border-gray-700 shadow-xs mt-2">
+                    <div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">Current Size</p>
+                        <p id="img-size-old" class="text-lg font-bold text-gray-700 dark:text-gray-200">-</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">Exact Output Footprint</p>
+                        <p id="img-size-new" class="text-lg font-bold text-green-600 dark:text-green-400">Calculating...</p>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="optimizeImage()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition shadow-md cursor-pointer">
+                Optimize and Download Image
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentFileSize = 0;
+        let globalLoadedImgDataUrl = null;
+
+        // FIXED Toggle Execution Strategy for Tailwind v4 
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tool-section').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('bg-blue-600', 'text-white', 'shadow-xs');
+                el.classList.add('text-gray-600', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
+            });
+            document.getElementById(`tool-${tab}`).classList.remove('hidden');
+            const activeTab = document.getElementById(`tab-${tab}`);
+            activeTab.classList.add('bg-blue-600', 'text-white', 'shadow-xs');
+            activeTab.classList.remove('text-gray-600', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
+            hideStatus();
+        }
+
+        function showStatus(message, type = 'success') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `mb-6 p-4 rounded-lg text-center font-medium block ${
+                type === 'success' ? 'bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-400' : type === 'error' ? 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-400' : 'bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-400'
+            }`;
+        }
+
+        function hideStatus() {
+            document.getElementById('status').classList.add('hidden');
+        }
+
+        function downloadBlob(blob, filename) {
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
+        function clearAllSessions() {
+            document.getElementById('merge-files').value = "";
+            document.getElementById('slice-file').value = "";
+            document.getElementById('slice-range').value = "";
+            document.getElementById('reduce-file').value = "";
+            document.getElementById('image-file').value = "";
+
+            currentFileSize = 0;
+            globalLoadedImgDataUrl = null;
+            document.getElementById('quality-slider').value = 70;
+            document.getElementById('size-original').textContent = "-";
+            document.getElementById('size-estimated').textContent = "-";
+            document.getElementById('slider-value').textContent = "70% (Balanced)";
+            document.getElementById('compression-controls').classList.add('hidden');
+            
+            document.getElementById('image-controls').classList.add('hidden');
+            document.getElementById('image-size-mode').value = "original";
+            document.getElementById('img-max-width').value = "";
+            document.getElementById('img-max-height').value = "";
+            document.getElementById('image-dimensions-inputs').classList.add('hidden');
+
+            showStatus('Workspace cleared. Ready for new tasks!', 'info');
+            setTimeout(hideStatus, 2000);
+        }
+
+        function handleImageSelect() {
+            const file = document.getElementById('image-file').files[0];
+            if (!file) return;
+
+            document.getElementById('img-size-old').textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+            document.getElementById('image-controls').classList.remove('hidden');
+
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function(e) {
+                globalLoadedImgDataUrl = e.target.result;
+                generateLiveImageEstimate();
+            };
+        }
+
+        function toggleSizeInputs() {
+            const mode = document.getElementById('image-size-mode').value;
+            const inputPanel = document.getElementById('image-dimensions-inputs');
+            if (mode === 'custom') inputPanel.classList.remove('hidden');
+            else inputPanel.classList.add('hidden');
+        }
+
+        function generateLiveImageEstimate() {
+            if (!globalLoadedImgDataUrl) return;
+
+            const quality = parseInt(document.getElementById('image-quality').value, 10) / 100;
+            const sizeMode = document.getElementById('image-size-mode').value;
+            const customWidth = parseInt(document.getElementById('img-max-width').value, 10);
+            const customHeight = parseInt(document.getElementById('img-max-height').value, 10);
+            const targetDisplayField = document.getElementById('img-size-new');
+
+            targetDisplayField.textContent = "Calculating...";
+
+            const img = new Image();
+            img.src = globalLoadedImgDataUrl;
+            img.onload = function () {
+                let targetWidth = img.width;
+                let targetHeight = img.height;
+
+                if (sizeMode === 'custom') {
+                    let scaleFactor = 1;
+                    if (customWidth && targetWidth > customWidth) scaleFactor = customWidth / targetWidth;
+                    if (customHeight && (targetHeight * scaleFactor) > customHeight) scaleFactor = customHeight / targetHeight;
+                    targetWidth = Math.round(targetWidth * scaleFactor);
+                    targetHeight = Math.round(targetHeight * scaleFactor);
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = targetWidth;
+                canvas.height = targetHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+                canvas.toBlob(function (blob) {
+                    if(blob) {
+                        targetDisplayField.textContent = `${(blob.size / 1024 / 1024).toFixed(2)} MB`;
+                    }
+                }, 'image/jpeg', quality);
+            };
+        }
+
+        function optimizeImage() {
+            const fileInput = document.getElementById('image-file').files[0];
+            if (!fileInput || !globalLoadedImgDataUrl) { showStatus('Select an image file first.', 'error'); return; }
+
+            const quality = parseInt(document.getElementById('image-quality').value, 10) / 100;
+            const sizeMode = document.getElementById('image-size-mode').value;
+            const customWidth = parseInt(document.getElementById('img-max-width').value, 10);
+            const customHeight = parseInt(document.getElementById('img-max-height').value, 10);
+
+            showStatus('Compiling optimized image file...', 'info');
+
+            const img = new Image();
+            img.src = globalLoadedImgDataUrl;
+            img.onload = function () {
+                let targetWidth = img.width;
+                let targetHeight = img.height;
+
+                if (sizeMode === 'custom') {
+                    let scaleFactor = 1;
+                    if (customWidth && targetWidth > customWidth) scaleFactor = customWidth / targetWidth;
+                    if (customHeight && (targetHeight * scaleFactor) > customHeight) scaleFactor = customHeight / targetHeight;
+                    targetWidth = Math.round(targetWidth * scaleFactor);
+                    targetHeight = Math.round(targetHeight * scaleFactor);
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = targetWidth;
+                canvas.height = targetHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+                canvas.toBlob(function (blob) {
+                    showStatus('Success! Image optimized.');
+                    downloadBlob(blob, `optimized_${fileInput.name.split('.')[0]}.jpg`);
+                }, 'image/jpeg', quality);
+            };
+        }
+
+        // --- PDF COMPONENT OPERATIONS ---
+        function handleFileSelect() {
+            const fileInput = document.getElementById('reduce-file').files[0];
+            if (!fileInput) return;
+            currentFileSize = fileInput.size;
+            document.getElementById('size-original').textContent = `${(currentFileSize / 1024 / 1024).toFixed(2)} MB`;
+            document.getElementById('compression-controls').classList.remove('hidden');
+            updateEstimates();
+        }
+
+        function updateEstimates() {
+            const slider = document.getElementById('quality-slider');
+            const val = parseInt(slider.value, 10);
+            const label = document.getElementById('slider-value');
+
+            if (val >= 90) label.textContent = `${val}% (High Quality - Structural Only)`;
+            else if (val >= 65) label.textContent = `${val}% (Balanced - Moderate Compression)`;
+            else if (val >= 35) label.textContent = `${val}% (Low Quality - Heavy Compression)`;
+            else label.textContent = `${val}% (Aggressive - Tiny File Size)`;
+
+            if (currentFileSize === 0) return;
+
+            let minPercent, maxPercent;
+            if (val >= 90) { minPercent = 0.85; maxPercent = 0.99; } 
+            else if (val >= 65) { minPercent = 0.50; maxPercent = 0.80; } 
+            else if (val >= 35) { minPercent = 0.25; maxPercent = 0.50; } 
+            else { minPercent = 0.05; maxPercent = 0.25; }
+
+            document.getElementById('size-estimated').textContent = `~ ${(currentFileSize * minPercent / 1024 / 1024).toFixed(2)} MB - ${(currentFileSize * maxPercent / 1024 / 1024).toFixed(2)} MB`;
+        }
+
+        async function mergePDFs() {
+            const files = document.getElementById('merge-files').files;
+            if (files.length < 2) { showStatus('Select at least 2 PDF files.', 'error'); return; }
+            showStatus('Processing...', 'info');
+            try {
+                const mergedPdf = await PDFLib.PDFDocument.create();
+                for (let file of files) {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdf = await PDFLib.PDFDocument.load(arrayBuffer);
+                    const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+                    copiedPages.forEach(page => mergedPdf.addPage(page));
+                }
+                const mergedPdfBytes = await mergedPdf.save();
+                downloadBlob(new Blob([mergedPdfBytes], { type: 'application/pdf' }), 'merged.pdf');
+                showStatus('Success!');
+            } catch (e) { showStatus('Error merging documents.', 'error'); }
+        }
+
+        async function slicePDF() {
+            const fileInput = document.getElementById('slice-file').files[0];
+            const rangeInput = document.getElementById('slice-range').value.trim();
+            if (!fileInput || !rangeInput) { showStatus('Provide both file and ranges.', 'error'); return; }
+            showStatus('Processing...', 'info');
+            try {
+                const arrayBuffer = await fileInput.arrayBuffer();
+                const sourcePdf = await PDFLib.PDFDocument.load(arrayBuffer);
+                const totalPages = sourcePdf.getPageCount();
+                const slicedPdf = await PDFLib.PDFDocument.create();
+                const targetIndices = [];
+                
+                rangeInput.split(',').forEach(part => {
+                    part = part.trim();
+                    if (part.includes('-')) {
+                        const [start, end] = part.split('-').map(num => parseInt(num.trim(), 10));
+                        for (let i = start; i <= end; i++) if (i >= 1 && i <= totalPages) targetIndices.push(i - 1);
+                    } else {
+                        const p = parseInt(part, 10);
+                        if (p >= 1 && p <= totalPages) targetIndices.push(p - 1);
+                    }
+                });
+
+                if (targetIndices.length === 0) { showStatus('Invalid ranges.', 'error'); return; }
+                const copiedPages = await slicedPdf.copyPages(sourcePdf, targetIndices);
+                copiedPages.forEach(page => slicedPdf.addPage(page));
+                const bytes = await slicedPdf.save();
+                downloadBlob(new Blob([bytes], { type: 'application/pdf' }), 'sliced.pdf');
+                showStatus('Success!');
+            } catch (e) { showStatus('Error slicing document.', 'error'); }
+        }
+
+        async function reducePDF() {
+            const fileInput = document.getElementById('reduce-file').files[0];
+            if (!fileInput) { showStatus('Select a file first.', 'error'); return; }
+
+            const userQualityPercent = parseInt(document.getElementById('quality-slider').value, 10);
+            const targetQuality = userQualityPercent / 100;
+            showStatus(`Compressing to your requested ${userQualityPercent}% quality profile...`, 'info');
+
+            try {
+                const arrayBuffer = await fileInput.arrayBuffer();
+                let outputBytes;
+
+                if (userQualityPercent >= 90) {
+                    const basePdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+                    const form = basePdfDoc.getForm();
+                    if (form) { try { form.flatten(); } catch(e){} }
+                    outputBytes = await basePdfDoc.save({ useObjectStreams: true });
+                } 
+                else {
+                    const pdfJS = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    const outPdfDoc = await PDFLib.PDFDocument.create();
+                    const calculatedScale = 0.4 + (targetQuality * 1.0); 
+
+                    for (let i = 1; i <= pdfJS.numPages; i++) {
+                        const page = await pdfJS.getPage(i);
+                        const baseViewport = page.getViewport({ scale: 1.0 });
+                        
+                        let targetScale = calculatedScale;
+                        const maxEdge = Math.max(baseViewport.width, baseViewport.height);
+                        if (maxEdge * targetScale > 1600) { targetScale = 1400 / maxEdge; }
+
+                        const viewport = page.getViewport({ scale: targetScale });
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+
+                        await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+                        const imgDataUrl = canvas.toDataURL('image/jpeg', targetQuality);
+                        const compressedImg = await outPdfDoc.embedJpg(imgDataUrl);
+                        
+                        const newPage = outPdfDoc.addPage([viewport.width, viewport.height]);
+                        newPage.drawImage(compressedImg, { x: 0, y: 0, width: viewport.width, height: viewport.height });
+                    }
+                    outputBytes = await outPdfDoc.save();
+                }
+
+                const oldMB = (fileInput.size / 1024 / 1024).toFixed(2);
+                const newMB = (outputBytes.length / 1024 / 1024).toFixed(2);
+                showStatus(`Done! Size shifted from ${oldMB}MB down to ${newMB}MB.`);
+                downloadBlob(new Blob([outputBytes], { type: 'application/pdf' }), `compressed_${userQualityPercent}pct_${fileInput.name}`);
+            } catch (error) { showStatus('An error occurred during reduction processing.', 'error'); }
+        }
+    </script>
+</body>
+</html>
