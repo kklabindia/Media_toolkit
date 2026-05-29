@@ -4,29 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All-in-One Media & PDF Toolkit</title>
+    
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
 
     <style>
-        /* By default, force light colors even if the OS wants dark mode */
+        /* LIGHT THEME CONSTANTS (Default Baseline) */
         :root {
-            --background: #f3f4f6;
-            --text: #1f2937;
+            --bg-color: #f3f4f6;       /* bg-gray-100 */
+            --text-main: #1f2937;      /* text-gray-800 */
+            --text-muted: #4b5563;     /* text-gray-600 */
+            --card-bg: #ffffff;        /* bg-white */
+            --border-color: #e5e7eb;   /* border-gray-200 */
+            --sub-panel-bg: #f9fafb;   /* bg-gray-50 */
+        }
+
+        /* DARK THEME CONTROLS (Only structural when .dark class is active) */
+        html.dark {
+            --bg-color: #111827;       /* bg-gray-900 */
+            --text-main: #f9fafb;      /* text-gray-100 */
+            --text-muted: #9ca3af;     /* text-gray-400 */
+            --card-bg: #1f2937;        /* bg-gray-800 */
+            --border-color: #374151;   /* border-gray-700 */
+            --sub-panel-bg: #111827;   /* bg-gray-900/50 fallback */
+        }
+
+        /* Enforce native styling injection alongside Tailwind layouts */
+        body {
+            background-color: var(--bg-color) !important;
+            color: var(--text-main) !important;
+            transition: background-color 0.2s ease, color 0.2s ease;
         }
         
-        /* Only apply dark mode colors if our HTML tag explicitly has the 'dark' class */
-        html.dark {
-            color-scheme: dark;
+        .theme-card {
+            background-color: var(--card-bg) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        .theme-subpanel {
+            background-color: var(--sub-panel-bg) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        .theme-text-muted {
+            color: var(--text-muted) !important;
+        }
+        
+        .theme-border {
+            border-color: var(--border-color) !important;
         }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100 font-sans min-h-screen py-10 px-4 transition-colors duration-200">
+<body class="font-sans min-h-screen py-10 px-4">
 
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js";
 
-        // Light mode is always default. Only load dark if the user explicitly saved it before.
+        // Light mode is always default unless user explicitly chose dark in past session
         if (localStorage.getItem('theme') === 'dark') {
             document.documentElement.classList.add('dark');
         } else {
@@ -35,59 +70,59 @@
     </script>
 
     <div class="max-w-4xl mx-auto">
-        <header class="flex flex-col sm:flex-row justify-between items-center mb-10 gap-4 border-b border-gray-200 dark:border-gray-800 pb-6">
+        <header class="flex flex-col sm:flex-row justify-between items-center mb-10 gap-4 border-b theme-border pb-6">
             <div class="text-center sm:text-left">
-                <h1 class="text-4xl font-bold text-gray-800 dark:text-white mb-2">📄 Media & PDF Toolpack</h1>
-                <p class="text-gray-600 dark:text-gray-400">Secure, offline-ready, and processed 100% locally on your machine.</p>
+                <h1 class="text-4xl font-bold mb-2">📄 Media & PDF Toolpack</h1>
+                <p class="theme-text-muted">Secure, offline-ready, and processed 100% locally on your machine.</p>
             </div>
-            <button onclick="toggleTheme()" class="px-4 py-2 text-sm font-semibold rounded-xl bg-white dark:bg-gray-800 shadow-xs border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition cursor-pointer text-gray-800 dark:text-white">
+            <button onclick="toggleTheme()" class="theme-card px-4 py-2 text-sm font-semibold rounded-xl shadow-xs border hover:opacity-85 transition cursor-pointer">
                 🌓 Toggle Theme
             </button>
         </header>
 
-        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 bg-white dark:bg-gray-800 p-3 rounded-xl shadow-md border border-gray-200/50 dark:border-gray-700/50">
+        <div class="theme-card flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 p-3 rounded-xl shadow-md border">
             <div class="flex flex-wrap gap-2 justify-center">
                 <button onclick="switchTab('merge')" id="tab-merge" class="tab-btn px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 bg-blue-600 text-white shadow-xs">
                     🔗 Merge PDFs
                 </button>
-                <button onclick="switchTab('slice')" id="tab-slice" class="tab-btn px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <button onclick="switchTab('slice')" id="tab-slice" class="tab-btn px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 theme-text-muted hover:bg-black/5 dark:hover:bg-white/5">
                     ✂️ Slice PDF
                 </button>
-                <button onclick="switchTab('reduce')" id="tab-reduce" class="tab-btn px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <button onclick="switchTab('reduce')" id="tab-reduce" class="tab-btn px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 theme-text-muted hover:bg-black/5 dark:hover:bg-white/5">
                     % Reduce PDF
                 </button>
-                <button onclick="switchTab('image-opt')" id="tab-image-opt" class="tab-btn px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <button onclick="switchTab('image-opt')" id="tab-image-opt" class="tab-btn px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 theme-text-muted hover:bg-black/5 dark:hover:bg-white/5">
                     🖼️ Image Optimizer
                 </button>
             </div>
             
-            <button onclick="clearAllSessions()" class="px-5 py-2 rounded-lg font-medium text-sm bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/60 transition-colors duration-200 cursor-pointer">
+            <button id="clear-workspace-btn" onclick="clearAllSessions()" class="hidden px-5 py-2 rounded-lg font-medium text-sm bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/60 transition-colors duration-200 cursor-pointer">
                 🧹 Clear Workspace
             </button>
         </div>
 
         <div id="status" class="hidden mb-6 p-4 rounded-lg text-center font-medium"></div>
 
-        <div id="tool-merge" class="tool-section bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-md border border-gray-200/60 dark:border-gray-700/60">
-            <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Merge Multiple PDFs</h2>
+        <div id="tool-merge" class="tool-section theme-card p-8 rounded-2xl shadow-md border">
+            <h2 class="text-2xl font-bold mb-4">Merge Multiple PDFs</h2>
             <div class="mb-6">
-                <input type="file" id="merge-files" multiple accept="application/pdf" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 dark:file:bg-gray-700 file:text-blue-700 dark:file:text-blue-400 hover:file:bg-blue-100 dark:hover:file:bg-gray-600 cursor-pointer" />
+                <input type="file" id="merge-files" onchange="checkWorkspaceFiles()" multiple accept="application/pdf" class="w-full text-sm theme-text-muted file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 dark:file:bg-gray-700 file:text-blue-700 dark:file:text-blue-400 hover:file:bg-blue-100 dark:hover:file:bg-gray-600 cursor-pointer" />
             </div>
             <button onclick="mergePDFs()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition shadow-md cursor-pointer">
                 Merge and Download
             </button>
         </div>
 
-        <div id="tool-slice" class="tool-section hidden bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-md border border-gray-200/60 dark:border-gray-700/60">
-            <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Slice/Extract PDF Pages</h2>
+        <div id="tool-slice" class="tool-section hidden theme-card p-8 rounded-2xl shadow-md border">
+            <h2 class="text-2xl font-bold mb-4">Slice/Extract PDF Pages</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-semibold mb-2">Select PDF File:</label>
-                    <input type="file" id="slice-file" accept="application/pdf" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:bg-blue-50 dark:file:bg-gray-700 file:text-blue-700 dark:file:text-blue-400 cursor-pointer" />
+                    <input type="file" id="slice-file" onchange="checkWorkspaceFiles()" accept="application/pdf" class="w-full text-sm theme-text-muted file:mr-4 file:py-2 file:px-4 file:rounded-md file:bg-blue-50 dark:file:bg-gray-700 file:text-blue-700 dark:file:text-blue-400 cursor-pointer" />
                 </div>
                 <div>
                     <label class="block text-sm font-semibold mb-2">Pages to Extract:</label>
-                    <input type="text" id="slice-range" placeholder="e.g., 1, 3, 5-8" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-800 dark:text-white" />
+                    <input type="text" id="slice-range" placeholder="e.g., 1, 3, 5-8" class="w-full px-4 py-2 border rounded-md bg-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none" style="border-color: var(--border-color);" />
                 </div>
             </div>
             <button onclick="slicePDF()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition shadow-md cursor-pointer">
@@ -95,29 +130,29 @@
             </button>
         </div>
 
-        <div id="tool-reduce" class="tool-section hidden bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-md border border-gray-200/60 dark:border-gray-700/60">
-            <h2 class="text-2xl font-bold mb-2 text-gray-800 dark:text-white">Reduce PDF Size</h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Drag the slider to manually control compression aggressiveness. Lower quality yields smaller files.</p>
+        <div id="tool-reduce" class="tool-section hidden theme-card p-8 rounded-2xl shadow-md border">
+            <h2 class="text-2xl font-bold mb-2">Reduce PDF Size</h2>
+            <p class="text-sm theme-text-muted mb-6">Drag the slider to manually control compression aggressiveness. Lower quality yields smaller files.</p>
             
             <div class="mb-6">
                 <label class="block text-sm font-semibold mb-2">Select PDF File:</label>
-                <input type="file" id="reduce-file" onchange="handleFileSelect()" accept="application/pdf" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 dark:file:bg-gray-700 file:text-blue-700 dark:file:text-blue-400 hover:file:bg-blue-100 dark:hover:file:bg-gray-600 cursor-pointer" />
+                <input type="file" id="reduce-file" onchange="handleFileSelect(); checkWorkspaceFiles();" accept="application/pdf" class="w-full text-sm theme-text-muted file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 dark:file:bg-gray-700 file:text-blue-700 dark:file:text-blue-400 hover:file:bg-blue-100 dark:hover:file:bg-gray-600 cursor-pointer" />
             </div>
 
-            <div id="compression-controls" class="hidden bg-gray-50 dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-700 mb-6">
+            <div id="compression-controls" class="hidden theme-subpanel p-6 rounded-xl border mb-6">
                 <div class="flex justify-between items-center mb-2">
                     <label class="text-sm font-semibold">Target Document Quality:</label>
-                    <span id="slider-value" class="text-sm font-bold text-blue-800 dark:text-blue-400 bg-blue-100 dark:bg-blue-950/50 px-2.5 py-1 rounded-md">70% (Balanced)</span>
+                    <span id="slider-value" class="text-sm font-bold bg-blue-600 text-white dark:bg-gray-700 dark:text-blue-400 px-3 py-1 rounded-md shadow-xs" style="color: #ffffff !important;">70% (Balanced)</span>
                 </div>
                 <input type="range" id="quality-slider" min="10" max="100" value="70" oninput="updateEstimates()" class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600 mb-4">
                 
-                <div class="grid grid-cols-2 gap-4 text-center bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-100 dark:border-gray-700 shadow-xs">
+                <div class="grid grid-cols-2 gap-4 text-center theme-card p-4 rounded-lg border shadow-xs">
                     <div>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">Original Size</p>
-                        <p id="size-original" class="text-lg font-bold text-gray-700 dark:text-gray-200">-</p>
+                        <p class="text-xs theme-text-muted uppercase font-semibold">Original Size</p>
+                        <p id="size-original" class="text-lg font-bold">-</p>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">Estimated Size Range</p>
+                        <p class="text-xs theme-text-muted uppercase font-semibold">Estimated Size Range</p>
                         <p id="size-estimated" class="text-lg font-bold text-green-600 dark:text-green-400">-</p>
                     </div>
                 </div>
@@ -127,50 +162,50 @@
             </button>
         </div>
 
-        <div id="tool-image-opt" class="tool-section hidden bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-md border border-gray-200/60 dark:border-gray-700/60">
-            <h2 class="text-2xl font-bold mb-2 text-gray-800 dark:text-white">Image Optimizer & Resizer</h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Compress photos and control pixel metrics dynamically with live output calculations.</p>
+        <div id="tool-image-opt" class="tool-section hidden theme-card p-8 rounded-2xl shadow-md border">
+            <h2 class="text-2xl font-bold mb-2">Image Optimizer & Resizer</h2>
+            <p class="text-sm theme-text-muted mb-6">Compress photos and control pixel metrics dynamically with live output calculations.</p>
             
             <div class="mb-6">
                 <label class="block text-sm font-semibold mb-2">Select Image (PNG, JPG, WEBP):</label>
-                <input type="file" id="image-file" onchange="handleImageSelect()" accept="image/*" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 dark:file:bg-gray-700 file:text-blue-700 dark:file:text-blue-400 hover:file:bg-blue-100 dark:hover:file:bg-gray-600 cursor-pointer" />
+                <input type="file" id="image-file" onchange="handleImageSelect(); checkWorkspaceFiles();" accept="image/*" class="w-full text-sm theme-text-muted file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 dark:file:bg-gray-700 file:text-blue-700 dark:file:text-blue-400 hover:file:bg-blue-100 dark:hover:file:bg-gray-600 cursor-pointer" />
             </div>
 
-            <div id="image-controls" class="hidden bg-gray-50 dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-700 mb-6 space-y-4">
+            <div id="image-controls" class="hidden theme-subpanel p-6 rounded-xl border mb-6 space-y-4">
                 <div>
                     <label class="block text-sm font-semibold mb-2">Dimension Control:</label>
-                    <select id="image-size-mode" onchange="toggleSizeInputs(); generateLiveImageEstimate();" class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 dark:text-white">
+                    <select id="image-size-mode" onchange="toggleSizeInputs(); generateLiveImageEstimate();" class="theme-card w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="original">Keep Original Source Dimensions</option>
                         <option value="custom">Resize Sizing (Scale Bounds Constrained)</option>
                     </select>
                 </div>
 
-                <div id="image-dimensions-inputs" class="hidden grid grid-cols-2 gap-4 bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-100 dark:border-gray-700">
+                <div id="image-dimensions-inputs" class="hidden grid grid-cols-2 gap-4 theme-card p-4 rounded-lg border">
                     <div>
-                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Max Width (px)</label>
-                        <input type="number" id="img-max-width" oninput="generateLiveImageEstimate()" placeholder="Original Width" class="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                        <label class="block text-xs font-semibold theme-text-muted mb-1">Max Width (px)</label>
+                        <input type="number" id="img-max-width" oninput="generateLiveImageEstimate()" placeholder="Original Width" class="w-full px-3 py-1.5 border rounded-md text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500" style="border-color: var(--border-color);"/>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Max Height (px)</label>
-                        <input type="number" id="img-max-height" oninput="generateLiveImageEstimate()" placeholder="Original Height" class="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                        <label class="block text-xs font-semibold theme-text-muted mb-1">Max Height (px)</label>
+                        <input type="number" id="img-max-height" oninput="generateLiveImageEstimate()" placeholder="Original Height" class="w-full px-3 py-1.5 border rounded-md text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500" style="border-color: var(--border-color);"/>
                     </div>
                 </div>
 
                 <div>
                     <div class="flex justify-between items-center mb-1">
                         <label class="text-sm font-semibold">Output Encoding Quality:</label>
-                        <span id="img-slider-label" class="text-sm font-bold text-blue-800 dark:text-blue-400 bg-blue-100 dark:bg-blue-950/50 px-2.5 py-1 rounded-md">80%</span>
+                        <span id="img-slider-label" class="text-sm font-bold bg-blue-600 text-white dark:bg-gray-700 dark:text-blue-400 px-3 py-0.5 rounded-md shadow-xs" style="color: #ffffff !important;">80%</span>
                     </div>
                     <input type="range" id="image-quality" min="10" max="100" value="80" oninput="document.getElementById('img-slider-label').textContent = this.value + '%'; generateLiveImageEstimate();" class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600">
                 </div>
 
-                <div class="grid grid-cols-2 gap-4 text-center bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-100 dark:border-gray-700 shadow-xs mt-2">
+                <div class="grid grid-cols-2 gap-4 text-center theme-card p-4 rounded-lg border shadow-xs mt-2">
                     <div>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">Current Size</p>
-                        <p id="img-size-old" class="text-lg font-bold text-gray-700 dark:text-gray-200">-</p>
+                        <p class="text-xs theme-text-muted uppercase font-semibold">Current Size</p>
+                        <p id="img-size-old" class="text-lg font-bold">-</p>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">Exact Output Footprint</p>
+                        <p class="text-xs theme-text-muted uppercase font-semibold">Exact Output Footprint</p>
                         <p id="img-size-new" class="text-lg font-bold text-green-600 dark:text-green-400">Calculating...</p>
                     </div>
                 </div>
@@ -186,7 +221,7 @@
         let currentFileSize = 0;
         let globalLoadedImgDataUrl = null;
 
-        // FIXED Toggle Execution Strategy for Tailwind v4 
+        // Centralized Theme Switcher
         function toggleTheme() {
             if (document.documentElement.classList.contains('dark')) {
                 document.documentElement.classList.remove('dark');
@@ -197,16 +232,31 @@
             }
         }
 
+        // FIXED: Checks if any files are currently loaded anywhere on the page
+        function checkWorkspaceFiles() {
+            const clearBtn = document.getElementById('clear-workspace-btn');
+            const mergeFiles = document.getElementById('merge-files').files.length;
+            const sliceFile = document.getElementById('slice-file').files.length;
+            const reduceFile = document.getElementById('reduce-file').files.length;
+            const imageFile = document.getElementById('image-file').files.length;
+
+            if (mergeFiles > 0 || sliceFile > 0 || reduceFile > 0 || imageFile > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+        }
+
         function switchTab(tab) {
             document.querySelectorAll('.tool-section').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(el => {
                 el.classList.remove('bg-blue-600', 'text-white', 'shadow-xs');
-                el.classList.add('text-gray-600', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
+                el.classList.add('theme-text-muted', 'hover:bg-black/5', 'dark:hover:bg-white/5');
             });
             document.getElementById(`tool-${tab}`).classList.remove('hidden');
             const activeTab = document.getElementById(`tab-${tab}`);
             activeTab.classList.add('bg-blue-600', 'text-white', 'shadow-xs');
-            activeTab.classList.remove('text-gray-600', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
+            activeTab.classList.remove('theme-text-muted', 'hover:bg-black/5', 'dark:hover:bg-white/5');
             hideStatus();
         }
 
@@ -250,6 +300,9 @@
             document.getElementById('img-max-width').value = "";
             document.getElementById('img-max-height').value = "";
             document.getElementById('image-dimensions-inputs').classList.add('hidden');
+
+            // Hide the button again since data is wiped
+            checkWorkspaceFiles();
 
             showStatus('Workspace cleared. Ready for new tasks!', 'info');
             setTimeout(hideStatus, 2000);
@@ -354,7 +407,7 @@
             };
         }
 
-        // --- PDF COMPONENT OPERATIONS ---
+        // --- PDF PIPELINE FUNCTIONALITIES ---
         function handleFileSelect() {
             const fileInput = document.getElementById('reduce-file').files[0];
             if (!fileInput) return;
